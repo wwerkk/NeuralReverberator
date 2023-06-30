@@ -16,6 +16,11 @@ data_16k/
 data_16k_rejected/
 nverb_env/
 pre_compute*/
+*.png
 
 # MATLAB
 audioplugin/
+
+# audio
+*.txt
+*.wav
