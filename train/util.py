@@ -147,7 +147,7 @@ class GenerateIRs(keras.callbacks.Callback):
 
 def generate_specgrams(dataset_dir, 
                        output_dir, 
-                       sequence_len, 
+                    #    sequence_len, 
                        rate=16000, 
                        n_fft=1024, 
                        n_hop=256, 
