@@ -1,11 +1,8 @@
-import sys
 import keras
 from keras import layers
 from keras import optimizers
 from keras.models import Model
 import keras.backend as K
-from kapre.time_frequency import Spectrogram
-from kapre.utils import Normalization2D, AmplitudeToDB
 
 def build_vae_model(n_samples, n_ch):
     n_ch = 1
