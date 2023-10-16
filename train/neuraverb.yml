@@ -1,0 +1,12 @@
+name: reverbvae
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10  # Specify the python version you need
+  - tensorflow
+  - librosa
+  - matplotlib
+  - numpy
+  - keras
+  - tqdm
