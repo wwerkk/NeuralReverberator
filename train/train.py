@@ -3,7 +3,7 @@ import util
 import model
 
 # hyperparameters
-epochs = 100
+epochs = 60
 batch_size = 8
 learning_rate = 0.0001
 latent_dim = 3
@@ -21,7 +21,7 @@ e, d, ae = model.build_spectral_ae(input_shape=input_shape,
                                    lr=learning_rate)
 
 # load the data
-x_train, x_test = util.load_specgrams('spectrograms', (513, 128), train_split=0.5, n_samples=n_samples)
+x_train, x_test = util.load_specgrams('spectrograms', (513, 128), train_split=0.8, n_samples=n_samples)
 
 start_time = datetime.datetime.today()
 

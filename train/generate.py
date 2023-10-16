@@ -111,9 +111,9 @@ if __name__ == '__main__':
                 z = np.reshape(np.array([a, b, c]), (1, 1, 1, 3)) # think i want to fix this in my model
                 filename = "_".join(["({:+0.3f})".format(dim) for dim in np.reshape(z, (3))])
                 filename = "{:04d}_{}".format(idx, filename)
-                filepath = os.path.join('pre_compute_demo', filename)
+                filepath = os.path.join('generated', filename)
                 spec = generate_specgram(decoder, z)
-                #audio_from_specgram(spec, 16000, filepath)
+                audio_from_specgram(spec, 16000, filepath)
                 plot_from_specgram(np.abs(spec), 16000, filepath)
                 idx += 1
 
