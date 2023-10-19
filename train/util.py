@@ -70,6 +70,10 @@ def load_params(dataset_dir, train_split=0.80, n_samples=None):
         x_train (ndarray): Training set (samples, params).
         x_test (ndarray): Testing set (samples, params).
     """
+
+    if n_samples is None: # set number of samples to full dataset
+        n_samples = len(glob.glob(os.path.join(dataset_dir, "*.txt")))
+        
     p = [] # list to hold parameters
     for idx, sample in enumerate(glob.glob(os.path.join(dataset_dir, "*.txt"))):
         s = np.loadtxt(sample)
@@ -78,9 +82,6 @@ def load_params(dataset_dir, train_split=0.80, n_samples=None):
         sys.stdout.flush()
 
     p = np.stack(p, axis=0)
-
-    if n_samples is None: # set number of samples to full dataset
-        n_samples = len(glob.glob(os.path.join(dataset_dir, "*.txt")))
         
     train_idx = np.floor(n_samples*train_split).astype('int')
     p_train = p[:train_idx,:]
