@@ -5,14 +5,13 @@ import glob
 import librosa
 import pickle
 import shutil
-import warnings
 import subprocess
 import keras
 import numpy as np
+import resampy
 from tqdm import tqdm
 import soundfile as sf
 from scipy.stats import norm
-from sklearn.utils import resample
 
 import matplotlib as mpl 
 mpl.use('agg')
@@ -58,6 +57,41 @@ def load_specgrams(dataset_dir, spec_shape, train_split=0.80, n_samples=None):
 
     return x_train, x_test 
 
+
+def load_params(dataset_dir, train_split=0.80, n_samples=None):
+    """
+    Utility function to load reverb parameters.
+
+    Args:
+        dataset_dir (str): Directory containing the dataset.
+        train_split (float, optional): Fraction of the data to return as training samples.
+    
+    Returns:
+        x_train (ndarray): Training set (samples, params).
+        x_test (ndarray): Testing set (samples, params).
+    """
+    p = [] # list to hold parameters
+    for idx, sample in enumerate(glob.glob(os.path.join(dataset_dir, "*.txt"))):
+        s = np.loadtxt(sample)
+        p.append(s)
+        sys.stdout.write(f"* Loaded {idx+1}/{n_samples} parameters\r")
+        sys.stdout.flush()
+
+    p = np.stack(p, axis=0)
+
+    if n_samples is None: # set number of samples to full dataset
+        n_samples = len(glob.glob(os.path.join(dataset_dir, "*.txt")))
+        
+    train_idx = np.floor(n_samples*train_split).astype('int')
+    p_train = p[:train_idx,:]
+    p_test = p[train_idx:,:]
+
+    print("p_train: {}".format(p_train.shape))
+    print("p_test:  {}".format(p_test.shape))
+
+    return p_train, p_test
+    
+    
 def load_data(dataset_dir, split=True, train_split=0.80):
     """ 
     Utility function to load room impulse responses.
@@ -73,6 +107,7 @@ def load_data(dataset_dir, split=True, train_split=0.80):
     IRs = [] # list to hold audio data
     sample_names = [] # temp list - delete this later - maybe not?
     load_samples = 0
+    n_samples = len(glob.glob(os.path.join(dataset_dir, "*.wav")))
     for idx, sample in enumerate(glob.glob(os.path.join(dataset_dir, "*.wav"))):
         data, rate = sf.read(sample, always_2d=True)
 
@@ -115,8 +150,11 @@ def convert_sample_rate(dataset_dir, output_dir, out_sample_rate):
     rir_list = glob.glob(os.path.join(dataset_dir, "*.wav"))
     for idx, sample in enumerate(tqdm(iterable=rir_list, desc="Converting sample rate", ncols=100)):
         filename = os.path.basename(sample).split('.')[0]
+        audio, sample_rate = sf.read(filename)
+        if sample_rate != out_sample_rate:
+            audio = resampy.resample(audio, sample_rate, out_sample_rate)
         out_filepath = os.path.join(output_dir, "{0}_{1}.wav".format(filename, out_sample_rate))
-        subprocess.call("""sox "{0}" -r {1} "{2}" """.format(sample, out_sample_rate, out_filepath), shell=True, stderr=subprocess.DEVNULL)
+        sf.write(out_filepath, audio, out_sample_rate)
 
 class GenerateIRs(keras.callbacks.Callback):
 
@@ -220,6 +258,7 @@ def generate_specgrams(dataset_dir,
 
         sys.stdout.write(f"* Computed {specs_generated}/{n_specs} RIR spectrograms\r")
         sys.stdout.flush()
+
 
 def plot_specgrams(log_power_spectra, rate, filename, output_dir):
     """ 
