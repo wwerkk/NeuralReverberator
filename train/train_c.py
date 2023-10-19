@@ -1,6 +1,8 @@
 import datetime
 import util
 import model_c
+import os
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # hyperparameters
 epochs = 200
@@ -10,7 +12,7 @@ latent_dim = 3
 cond_dim = 32
 n_filters = [32, 64, 128, 1024]
 train_split = 0.8
-n_samples = None
+n_samples = 2
 
 # input
 input_shape = (513, 128, 1)
@@ -23,9 +25,19 @@ e, d, ae = model_c.build_spectral_ae(input_shape=input_shape,
                                    n_filters=n_filters,
                                    lr=learning_rate)
 
+# Change the working directory to the train folder
+if os.getcwd().split('/')[-1] != 'train':
+    os.chdir('train')
+
 # load the data
 x_train, x_test = util.load_specgrams('spectrograms', (513, 128), train_split=train_split, n_samples=n_samples)
 p_train, p_test = util.load_params('params', train_split=train_split, n_samples=n_samples)
+
+# define callbacks
+callbacks = [
+     EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10),
+     # ModelCheckpoint('models/best.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
+]
 
 start_time = datetime.datetime.today()
 
@@ -34,7 +46,8 @@ history = ae.fit(x=[x_train, p_train], y=[x_train, p_train],
                 shuffle=True,
                 epochs=epochs,
                 batch_size=batch_size,
-                validation_data=([x_train, p_train], [x_train, p_train]))
+                validation_data=([x_train, p_train], [x_train, p_train]),
+                callbacks=callbacks)
 
 end_time = datetime.datetime.today()
 
