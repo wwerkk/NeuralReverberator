@@ -84,7 +84,7 @@ def build_spectral_ae(input_shape=(513, 256, 1), latent_dim=3, n_filters=[32, 64
 
     outputs = decoder(encoder(input_spect))
     autoencoder = Model(input_spect, outputs)
-    autoencoder.compile(optimizer=optimizers.Adam(lr=lr), loss='mean_squared_error')
+    autoencoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
     autoencoder.summary()
     
     return encoder, decoder, autoencoder
