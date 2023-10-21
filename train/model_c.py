@@ -57,7 +57,8 @@ def build_spectral_ae(input_shape=(513, 256, 1),
     z = layers.BatchNormalization()(x)
 
     # Decoder
-    input_z = layers.Input(shape=(1, 1, latent_dim))
+    input_z = layers.Input(shape=(z.shape[1], z.shape[2], latent_dim))
+    x = layers.Concatenate(axis=-1)([input_z, cond_input_reshaped])
     x = layers.Conv2DTranspose(f4, (1,1), padding='same', strides=(1,1))(input_z)
     x = layers.LeakyReLU(alpha=0.1)(x)
     x = layers.BatchNormalization()(x)
