@@ -77,9 +77,11 @@ def build_spectral_ae(input_shape=(513, 256, 1), latent_dim=3, n_filters=[32, 64
     output_spect = layers.Conv2DTranspose(1, (1,1), padding='same', strides=(1,1))(x)
     
     encoder = Model(input_spect, z)
+    encoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
     encoder.summary()
 
     decoder = Model(input_z, output_spect)
+    decoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
     decoder.summary()
 
     outputs = decoder(encoder(input_spect))
