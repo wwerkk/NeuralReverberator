@@ -2,17 +2,34 @@ import datetime
 import util
 import model_c
 import os
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, Callback
+
+# custom callback for checkpoint save
+class CustomModelCheckpoint(Callback):
+    def __init__(self, encoder, decoder, model_dir):
+        self.encoder = encoder
+        self.decoder = decoder
+        self.model_dir = model_dir
+        self.best_loss = float('inf')
+
+    def on_epoch_end(self, epoch, logs=None):
+        val_loss = logs.get('val_loss')
+        if val_loss < self.best_loss:
+            self.best_loss = val_loss
+            self.encoder.save(os.path.join(self.model_dir, "encoder_best.h5"))
+            self.decoder.save(os.path.join(self.model_dir, "decoder_best.h5"))
+            self.model.save(os.path.join(self.model_dir, "ae_best.h5"))
+            print(f"Saved models to \"{self.model_dir}\" at epoch {epoch}")
 
 # hyperparameters
-epochs = 200
+epochs = 100
 batch_size = 8
 learning_rate = 0.0001
 latent_dim = 3
 cond_dim = 32
 n_filters = [32, 64, 128, 1024]
 train_split = 0.8
-n_samples = 2
+n_samples = None
 
 # input
 input_shape = (513, 128, 1)
@@ -36,7 +53,8 @@ p_train, p_test = util.load_params('params', train_split=train_split, n_samples=
 # define callbacks
 callbacks = [
      EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10),
-     # ModelCheckpoint('models/best.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
+     CustomModelCheckpoint(encoder=e, decoder=d, model_dir='models')
+
 ]
 
 start_time = datetime.datetime.today()
@@ -51,7 +69,7 @@ history = ae.fit(x=[x_train, p_train], y=[x_train, p_train],
 
 end_time = datetime.datetime.today()
 
-print(f"Completed {epochs} in {end_time-start_time}.")
+print(f"Completed in {end_time-start_time}.")
 
 # generate report here
 r = {'start_time' : start_time,
