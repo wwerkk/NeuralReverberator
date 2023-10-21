@@ -6,10 +6,10 @@ from keras.callbacks import EarlyStopping, Callback
 
 # custom callback for checkpoint save
 class CustomModelCheckpoint(Callback):
-    def __init__(self, encoder, decoder, model_dir):
+    def __init__(self, encoder, decoder, checkpoint_dir):
         self.encoder = encoder
         self.decoder = decoder
-        self.model_dir = model_dir
+        self.model_dir = checkpoint_dir
         self.best_loss = float('inf')
 
     def on_epoch_end(self, epoch, logs=None):
@@ -19,7 +19,7 @@ class CustomModelCheckpoint(Callback):
             self.encoder.save(os.path.join(self.model_dir, "encoder_best.h5"))
             self.decoder.save(os.path.join(self.model_dir, "decoder_best.h5"))
             self.model.save(os.path.join(self.model_dir, "ae_best.h5"))
-            print(f"Saved models to \"{self.model_dir}\" at epoch {epoch}")
+            print(f"\nSaved to \"{self.model_dir}\" at epoch {epoch}")
 
 # hyperparameters
 epochs = 100
@@ -53,7 +53,7 @@ p_train, p_test = util.load_params('params', train_split=train_split, n_samples=
 # define callbacks
 callbacks = [
      EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10),
-     CustomModelCheckpoint(encoder=e, decoder=d, model_dir='models')
+     CustomModelCheckpoint(encoder=e, decoder=d, model_dir='checkpoints')
 
 ]
 
