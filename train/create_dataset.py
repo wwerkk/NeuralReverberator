@@ -36,9 +36,9 @@ p_dir = "params"
 y_dir = "audio"
 spectrograms_dir = "spectrograms"
 
-n_samples = 50
+n_samples = 500
 length_s = 2
-SR = 16000
+sr = 16000
 
 # Change the working directory to the train folder
 if os.getcwd().split('/')[-1] != 'train':
@@ -49,67 +49,65 @@ os.makedirs(p_dir, exist_ok=True)
 os.makedirs(y_dir, exist_ok=True)
 os.makedirs(spectrograms_dir, exist_ok=True)
 
-# Define the Freeverb parameter space
-n_c = 8
-c = (
-    (1000, 500), # delay mean, stdev
-    (0.3, 0.1), # feedback gain mean, stdev
-    (0.7, 0.1) # damping mean, stdev
-)
+## TODO: Parameter space and param generation for FDN reverberator
+# "Decay"
+# "Min distance"
+# "Max distance"
+# "Distance curve"
+# "Low frequency" 
+# "Frequency curve"
+# "High frequency"
 
-n_a = 4
-a = (
-    (300, 100), # delay mean, stdev
-    (0.3, 0.2) # feedback gain mean, stdev
-)
+## TODO: Additionally - completely random delay lengths
 
 # Set the random seed for reproducibility
 np.random.seed(42)
 
+## TODO: replace with generated impulse array
+## TODO: get rid of the below code
 # Load the audio file
-file_path = os.path.join(x_dir, x_file)
-x, sr = read(file_path)
-if sr != SR:
-    x = resample(x, sr, SR)
-    sr = SR
+# file_path = os.path.join(x_dir, x_file)
+# x, sr = read(file_path)
+# if sr != SR:
+#     x = resample(x, sr, SR)
+#     sr = SR
 # Normalize the x to the range [-1, 1]
-x /= max(abs(x))
+# x /= max(abs(x))
 length = length_s * sr
 
 start_time = time.time()
 
-P = [] # params
-S = [] # spectrograms
+# P = [] # params
+# S = [] # spectrograms
 
 for i in range(n_samples):
     # Apply the Freeverb effect with randomized peters
-    cM = np.random.normal(c[0][0], c[0][1], n_c).astype(int)
-    ca = np.random.normal(c[1][0], c[1][1], n_c)
-    cd = np.random.normal(c[2][0], c[2][1], n_c)
-    aM = np.random.normal(a[0][0], a[0][1], n_a).astype(int)
-    aa = np.random.normal(a[1][0], a[1][1], n_a)
+    # cM = np.random.normal(c[0][0], c[0][1], n_c).astype(int)
+    # ca = np.random.normal(c[1][0], c[1][1], n_c)
+    # cd = np.random.normal(c[2][0], c[2][1], n_c)
+    # aM = np.random.normal(a[0][0], a[0][1], n_a).astype(int)
+    # aa = np.random.normal(a[1][0], a[1][1], n_a)
 
-    # Clip gain params to prevent exploding feedback
-    ca = np.clip(ca, 0, 1)
-    cd = np.clip(cd, 0, 1)
-    aa = np.clip(aa, 0, 1)
+    # # Clip gain params to prevent exploding feedback
+    # ca = np.clip(ca, 0, 1)
+    # cd = np.clip(cd, 0, 1)
+    # aa = np.clip(aa, 0, 1)
 
-    # Process the audio file with the Freeverb effect
-    y = freeverb(
-        x=x,
-        cM=cM,
-        ca=ca,
-        cd=cd,
-        aM=aM,
-        aa=aa
-    )
+    # # Process the audio file with the Freeverb effect
+    # y = freeverb(
+    #     x=x,
+    #     cM=cM,
+    #     ca=ca,
+    #     cd=cd,
+    #     aM=aM,
+    #     aa=aa
+    # )
 
-    # Truncate to desired length
-    y = y[:length]
+    # # Truncate to desired length
+    # y = y[:length]
 
     # Store the params in a .txt file
-    p_filename = os.path.splitext(x_file)[0] + f"_{i}.txt"
-    p_path = os.path.join(p_dir, p_filename)
+    p_filename = os.path.splitext(x_file)[0] + f"_{i}.txt" # add Bell curve Wojack to slides
     p = np.concatenate([cM, ca, cd, aM, aa], dtype=object)
     np.savetxt(p_path, p, fmt='%.10f')
 
@@ -121,11 +119,11 @@ for i in range(n_samples):
 
     # Generate the spectrogram
     Sn = np.array(generate_specgram(y, sr))
-    specgram_filename = os.path.splitext(x_file)[0] + f"_{i}.txt"
+    specgram_filename = os.path.splitext(x_file)[0] + f"_{i}.txt" # add Bell curve Wojack to slides
     specgram_path = os.path.join(spectrograms_dir, specgram_filename)
     np.savetxt(specgram_path, Sn)
 
-print(f"{n_samples} samples generated.")
+    print(f"{i}/{n_samples}")
 
 end_time = time.time()
 runtime = end_time - start_time
