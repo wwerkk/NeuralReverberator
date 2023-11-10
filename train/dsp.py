@@ -123,6 +123,19 @@ def allpass(x: npt.NDArray[np.float64], M: int = 2000, a: float = 0.5) -> npt.ND
             feedback *= a
     return y
 
+def calculate_feedback_gain(T60, M):
+    """
+    Calculate the feedback gain (a) for a Schroeder comb filter based on the given T60 decay time and delay length (M).
+    
+    Args:
+        T60 (float): Desired decay time in seconds.
+        M (int): Delay length in samples.
+    
+    Returns:
+        float: Calculated feedback gain.
+    """
+    return np.exp((np.log(0.001) * M) / T60)
+
 @njit
 def freeverb(
         x,
@@ -170,6 +183,4 @@ def freeverb(
     y = y / (max_abs_value + epsilon)
     return y
 
-# TODO: Jot's reverberator
-# https://ccrma.stanford.edu/~jos/pasp/History_FDNs_Artificial_Reverberation.html
-# https://ccrma.stanford.edu/~jos/pasp/img745_2x.png
+# TODO: FDN Reverb paste from Ben
