@@ -6,8 +6,10 @@ __pycache__
 *.vst
 
 # project
+checkpoints/
 models/
 spectrograms/
+params/
 spect_plots/
 reports/
 archives/
