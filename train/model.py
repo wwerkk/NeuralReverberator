@@ -39,7 +39,7 @@ def build_spectral_regression(input_shape=(513, 256, 1), n_filters=[32, 64, 128,
 
     # Flatten and add Dense layer for regression
     x = layers.Flatten()(x)
-    output = layers.Dense(8)(x)  # Output layer for 8 regression parameters
+    output = layers.Dense(7)(x)  # Output layer for 7 regression parameters
 
     model = Model(input_spect, output)
     model.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')

@@ -457,14 +457,12 @@ def generate_report(r, msg='', root_report_dir='reports'):
              'batch_size' : batch_size,
              'epochs' : epochs,
              'learning_rate' : learning_rate,
-             'latent_dim' : latent_dim,
              'n_filters' : n_filters,
              'input_shape' : input_shape,
              'rate' : rate,
              'n_samples' : n_samples,
-             'encoder' : e,
-             'decoder' : d,
-             'autoencoder' : ae}
+             'model' : m
+             }
 
         msg (str, optional): Optional message from user when running experiment.
         root_report_dir (str, optional): Directory for reports to be stored.
@@ -491,19 +489,14 @@ def generate_report(r, msg='', root_report_dir='reports'):
         results.write(f"Batch size:  {r['batch_size']}\n")
         results.write(f"Epochs:      {r['epochs']}\n")
         results.write(f"Learning:    {r['learning_rate']}\n")
-        results.write(f"Latent dim:  {r['latent_dim']}\n")
         results.write(f"N filters:   {r['n_filters']}\n")
         results.write(f"Input shape: {r['input_shape']}\n")
         results.write(f"N samples:   {r['n_samples']}\n")
         results.write("\n--- NETWORK ARCHITECTURE ---\n")
-        r['autoencoder'].summary(print_fn=lambda x: results.write(x + '\n'))
-        r['encoder'].summary(print_fn=lambda x: results.write(x + '\n'))
-        r['decoder'].summary(print_fn=lambda x: results.write(x + '\n'))
+        r['model'].summary(print_fn=lambda x: results.write(x + '\n'))
     
     # save models
-    r['autoencoder'].save(os.path.join(root_report_dir, report_dir, "autoencoder.hdf5"))
-    r['encoder'].save(os.path.join(root_report_dir, report_dir, "encoder.hdf5"))
-    r['decoder'].save(os.path.join(root_report_dir, report_dir, "decoder.hdf5"))
+    r['model'].save(os.path.join(root_report_dir, report_dir, "regression.hdf5"))
 
     # save training history for chart generation
     pickle.dump(r['history'], open(os.path.join(root_report_dir, report_dir, 
