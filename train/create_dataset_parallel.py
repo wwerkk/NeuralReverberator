@@ -26,6 +26,10 @@ MAX_LENGTH = 2000
 PLOT = True
 NUM_WORKERS = os.cpu_count() # default to number of cores, can be set manually
 
+# Change the working directory to the train folder
+if os.getcwd().split('/')[-1] != 'train':
+    os.chdir('train')
+
 # Create the output directory if it doesn't exist
 os.makedirs(p_dir, exist_ok=True)
 os.makedirs(y_dir, exist_ok=True)
