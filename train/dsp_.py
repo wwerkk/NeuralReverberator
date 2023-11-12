@@ -245,12 +245,12 @@ def simple_fdn(input,
         decay_ms[i] = t60(((decay/1000) * sr) / l[i])
         
         
-    # all generated impulse responses should be 2 seconds.
-    # if processing a real world signal the sample may be larger than two seconds.
+    # all generated impulse responses should be max_length  miliseconds.
+    # if processing a real world signal the sample may be larger .
     # check for that case and leave if less than 88200 add until it is
     
     extra_time_in_samples = int(t60_time(decay_ms[-1]) * l[-1])
-    difference = (sr * 2) - extra_time_in_samples
+    difference = (sr * (max_length // 1000)) - extra_time_in_samples
     if (difference) > 0: extra_time_in_samples += difference 
     
     x = np.zeros((N, input.shape[-1] + extra_time_in_samples))
