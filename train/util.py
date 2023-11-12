@@ -725,7 +725,7 @@ def plot_specgram(log_power_spectra, rate, filename, output_dir):
     ###
     # Other misc functions
     ###
-    @numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def pad(a, pad_width, constant_values=0):
     """
     Pads a 1D NumPy array with a constant value.
