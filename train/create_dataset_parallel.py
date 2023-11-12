@@ -13,18 +13,22 @@ from util import generate_specgram, plot_specgram
 from multiprocessing import Pool
 
 # Set the paths
-p_dir = "data_/params"
-y_dir = "data_/audio"
-spect_dir = "data_/spectrograms"
-plot_dir = "data_/spect_plots"
+p_dir = "data/params"
+y_dir = "data/audio"
+spect_dir = "data/spectrograms"
+plot_dir = "data/spect_plots"
 
 # FDN size and samplerate
 FDN_SIZE = 16
 SAMPLE_RATE = 16000
-IMPULSE_NUM = 20
-MAX_LENGTH = 2000
+IMPULSE_NUM = 5
+MAX_LENGTH = 1000
 PLOT = True
 NUM_WORKERS = os.cpu_count() # default to number of cores, can be set manually
+
+# Change the working directory to the train folder
+if os.getcwd().split('/')[-1] != 'train':
+    os.chdir('train')
 
 # Create the output directory if it doesn't exist
 os.makedirs(p_dir, exist_ok=True)

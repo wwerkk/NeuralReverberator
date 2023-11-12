@@ -2,12 +2,8 @@ from keras import layers
 from keras import optimizers
 from keras.models import Model
 
-def build_spectral_ae(input_shape=(513, 256, 1), latent_dim=3, n_filters=[32, 64, 128, 256, 512], lr=0.001):
-
-    f1 = n_filters[0]
-    f2 = n_filters[1]
-    f3 = n_filters[2]
-    f4 = n_filters[3]
+def build_spectral_regression(input_shape=(513, 256, 1), n_filters=[32, 64, 128, 256, 512], lr=0.001):
+    f1, f2, f3, f4 = n_filters[:4]
 
     input_spect = layers.Input(input_shape)
     x = layers.Conv2D(f1, (5,5), padding='same', strides=(2,2))(input_spect)
@@ -40,53 +36,13 @@ def build_spectral_ae(input_shape=(513, 256, 1), latent_dim=3, n_filters=[32, 64
     x = layers.Conv2D(f4, (1,1), padding='same', strides=(2,1))(x)
     x = layers.LeakyReLU(alpha=0.1)(x)
     x = layers.BatchNormalization()(x)
-    x = layers.Conv2D(latent_dim, (1,1), padding='same', strides=(1,1))(x)
-    z = layers.BatchNormalization()(x)
 
-    input_z = layers.Input(shape=(1, 1, latent_dim))
-    x = layers.Conv2DTranspose(f4, (1,1), padding='same', strides=(1,1))(input_z)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f3, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f3, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f3, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f2, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f2, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f2, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f1, (2,2), padding='same', strides=(2,2))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f1, (2,2), padding='same', strides=(2,1))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2DTranspose(f1, (3,1), padding='valid', strides=(2,1))(x)
-    x = layers.LeakyReLU(alpha=0.1)(x)
-    x = layers.BatchNormalization()(x)
-    output_spect = layers.Conv2DTranspose(1, (1,1), padding='same', strides=(1,1))(x)
+    # Flatten and add Dense layer for regression
+    x = layers.Flatten()(x)
+    output = layers.Dense(8)(x)  # Output layer for 8 regression parameters
+
+    model = Model(input_spect, output)
+    model.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
+    model.summary()
     
-    encoder = Model(input_spect, z)
-    encoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
-    encoder.summary()
-
-    decoder = Model(input_z, output_spect)
-    decoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
-    decoder.summary()
-
-    outputs = decoder(encoder(input_spect))
-    autoencoder = Model(input_spect, outputs)
-    autoencoder.compile(optimizer=optimizers.Adam(learning_rate=lr), loss='mean_squared_error')
-    autoencoder.summary()
-    
-    return encoder, decoder, autoencoder
+    return model
