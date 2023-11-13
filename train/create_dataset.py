@@ -12,10 +12,10 @@ import os
 from util import generate_specgram, plot_specgram
 
 # Set the paths
-p_dir = "data_/params"
-y_dir = "data_/audio"
-spect_dir = "data_/spectrograms"
-plot_dir = "data_/spect_plots"
+p_dir = "data/params"
+y_dir = "data/audio"
+spect_dir = "data/spectrograms"
+plot_dir = "data/spect_plots"
 
 # Change the working directory to the train folder
 if os.getcwd().split('/')[-1] != 'train':
@@ -30,7 +30,7 @@ os.makedirs(plot_dir, exist_ok=True)
 # FDN size and samplerate
 FDN_SIZE = 16
 SAMPLE_RATE = 16000
-IMPULSE_NUM = 5
+IMPULSE_NUM = 5000
 MAX_LENGTH = 1000
 PLOT = True
 
@@ -90,8 +90,6 @@ for i in range(IMPULSE_NUM):
     write(y_path, y, SAMPLE_RATE)
     # Save FDN params
     p_path = p_dir + '/' + "impulse" + f"_{i}.txt"
-    # print(parameters.values[i])
-    # np.savetxt(p_path, parameters.values[i], fmt='%.10f')
     np.savetxt(p_path, parameters.values[i])
     # Generate and save the spectrogram
     Sn = np.array(generate_specgram(y, SAMPLE_RATE))

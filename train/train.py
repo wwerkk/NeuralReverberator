@@ -4,7 +4,7 @@ import model
 import os
 
 # hyperparameters
-epochs = 4
+epochs = 200
 batch_size = 8
 learning_rate = 0.0001
 n_filters = [32, 64, 128, 1024]
