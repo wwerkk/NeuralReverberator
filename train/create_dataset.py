@@ -4,18 +4,17 @@ warnings.filterwarnings("ignore", category=NumbaPerformanceWarning)
 import numpy as np
 import scipy
 import pandas as pd
-from soundfile import  write
-from dsp_ import prime
+from soundfile import write
 import time
-from dsp_ import simple_fdn
+from dsp_ import prime, simple_fdn
 import os
 from util import generate_specgram, plot_specgram
 
 # Set the paths
-p_dir = "data/params"
-y_dir = "data/audio"
-spect_dir = "data/spectrograms"
-plot_dir = "data/spect_plots"
+p_dir = "data_/params"
+y_dir = "data_/audio"
+spect_dir = "data_/spectrograms"
+plot_dir = "data_/spect_plots"
 
 # Change the working directory to the train folder
 if os.getcwd().split('/')[-1] != 'train':
@@ -30,7 +29,7 @@ os.makedirs(plot_dir, exist_ok=True)
 # FDN size and samplerate
 FDN_SIZE = 16
 SAMPLE_RATE = 16000
-IMPULSE_NUM = 5000
+IMPULSE_NUM = 10
 MAX_LENGTH = 1000
 PLOT = True
 
@@ -47,7 +46,7 @@ H = scipy.linalg.hadamard(FDN_SIZE) * 0.25
 start_time = time.time()
 
 # Random parameter arrays
-decay           = np.random.random((IMPULSE_NUM))
+decay           = 0.06 + np.random.random((IMPULSE_NUM)) * (1 - 0.06)
 min_dist        = 0.001 + np.random.random((IMPULSE_NUM)) * (0.1 - 0.001)
 max_dist        = 0.1 + np.random.random((IMPULSE_NUM)) * 0.9
 distance_curve  = np.random.random((IMPULSE_NUM))
@@ -73,9 +72,9 @@ PRIME_LIST = prime(0, 30000)
 for i in range(IMPULSE_NUM):
     print(parameters.values[i])
     y = simple_fdn(x,
-                   decay=0,
-                   min_dist=0,
-                   max_dist=0,
+                   decay=decay[i],
+                   min_dist=min_dist[i],
+                   max_dist=max_dist[i],
                    distance_curve=distance_curve[i],
                    min_freq=min_freq[i],
                    max_freq=max_freq[i],

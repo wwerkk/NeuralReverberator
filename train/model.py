@@ -1,6 +1,8 @@
 from keras import layers
 from keras import optimizers
 from keras.models import Model
+## TODO: increase model capacity
+## TODO: overfit
 
 def build_spectral_regression(input_shape=(513, 256, 1), n_filters=[32, 64, 128, 256, 512], lr=0.001):
     f1, f2, f3, f4 = n_filters[:4]
