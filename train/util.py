@@ -81,13 +81,14 @@ def load_params(dataset_dir, train_split=0.80, n_samples=None):
         
     p = [] # list to hold parameters
     for idx, sample in enumerate(glob.glob(os.path.join(dataset_dir, "*.txt"))):
-        s = np.loadtxt(sample)
-        p.append(s)
-        sys.stdout.write(f"* Loaded {idx+1}/{n_samples} parameters\r")
-        sys.stdout.flush()
+        if idx < n_samples:
+            s = np.loadtxt(sample)
+            p.append(s)
+            sys.stdout.write(f"* Loaded {idx+1}/{n_samples} parameters\r")
+            sys.stdout.flush()
 
     p = np.stack(p, axis=0)
-        
+    
     train_idx = np.floor(n_samples*train_split).astype('int')
     p_train = p[:train_idx,:]
     p_test = p[train_idx:,:]
