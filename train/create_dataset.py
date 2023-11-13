@@ -1,130 +1,108 @@
-import os
+import warnings
+from numba.core.errors import NumbaPerformanceWarning
+warnings.filterwarnings("ignore", category=NumbaPerformanceWarning)
 import numpy as np
-from soundfile import read, write
-from dsp import freeverb
+import scipy
+import pandas as pd
+from soundfile import  write
+from dsp_ import prime
 import time
-from resampy import resample
-from librosa import stft, power_to_db
-
-
-def generate_specgram(x, sr=16000, n_fft=1024, n_hop=256):
-    """
-    Generate a spectrogram (via stft) on input audio data.
-
-    Args:
-        x (ndarray): Input audio data.
-        sr (int, optional): Sample rate out input audio data.
-        n_fft (int, optional): Size of the FFT to generate spectrograms.
-        n_hop (int, optional): Hop size for FFT.
-    """
-    S = stft(x, n_fft=n_fft, hop_length=n_hop, center=True)
-    power_spectra = np.abs(S)**2
-    log_power_spectra = power_to_db(power_spectra)
-    _min = np.amin(log_power_spectra)
-    _max = np.amax(log_power_spectra)
-    if _min == _max:
-        print(f"divide by zero in audio array")
-    else:
-        normalized_log_power_spectra = (log_power_spectra - _min) / (_max - _min)
-    return normalized_log_power_spectra
-
+from dsp_ import simple_fdn
+import os
+from util import generate_specgram, plot_specgram
 
 # Set the paths
-x_file = "noise_burst.wav"
-x_dir = "data/dry"
-p_dir = "params"
-y_dir = "audio"
-spectrograms_dir = "spectrograms"
-
-n_samples = 500
-length_s = 2
-sr = 16000
+p_dir = "data_/params"
+y_dir = "data_/audio"
+spect_dir = "data_/spectrograms"
+plot_dir = "data_/spect_plots"
 
 # Change the working directory to the train folder
 if os.getcwd().split('/')[-1] != 'train':
     os.chdir('train')
- 
+
 # Create the output directory if it doesn't exist
 os.makedirs(p_dir, exist_ok=True)
 os.makedirs(y_dir, exist_ok=True)
-os.makedirs(spectrograms_dir, exist_ok=True)
+os.makedirs(spect_dir, exist_ok=True)
+os.makedirs(plot_dir, exist_ok=True)
 
-## TODO: Parameter space and param generation for FDN reverberator
-# "Decay"
-# "Min distance"
-# "Max distance"
-# "Distance curve"
-# "Low frequency" 
-# "Frequency curve"
-# "High frequency"
-
-## TODO: Additionally - completely random delay lengths
+# FDN size and samplerate
+FDN_SIZE = 16
+SAMPLE_RATE = 16000
+IMPULSE_NUM = 5
+MAX_LENGTH = 1000
+PLOT = True
 
 # Set the random seed for reproducibility
 np.random.seed(42)
 
-## TODO: replace with generated impulse array
-## TODO: get rid of the below code
-# Load the audio file
-# file_path = os.path.join(x_dir, x_file)
-# x, sr = read(file_path)
-# if sr != SR:
-#     x = resample(x, sr, SR)
-#     sr = SR
-# Normalize the x to the range [-1, 1]
-# x /= max(abs(x))
-length = length_s * sr
+# Unipolar impulse
+x = np.zeros(2)
+x[0] = -1
+x[1] = 1
 
+# Hadamard matrix
+H = scipy.linalg.hadamard(FDN_SIZE) * 0.25
 start_time = time.time()
 
-# P = [] # params
-# S = [] # spectrograms
+# Random parameter arrays
+decay           = np.random.random((IMPULSE_NUM))
+min_dist        = 0.001 + np.random.random((IMPULSE_NUM)) * (0.1 - 0.001)
+max_dist        = 0.1 + np.random.random((IMPULSE_NUM)) * 0.9
+distance_curve  = np.random.random((IMPULSE_NUM))
+min_freq        = np.random.random((IMPULSE_NUM)) * 0.5
+max_freq        = 0.5 + np.random.random((IMPULSE_NUM)) * 0.5
+frequency_curve = np.random.random((IMPULSE_NUM))
 
-for i in range(n_samples):
-    # Apply the Freeverb effect with randomized peters
-    # cM = np.random.normal(c[0][0], c[0][1], n_c).astype(int)
-    # ca = np.random.normal(c[1][0], c[1][1], n_c)
-    # cd = np.random.normal(c[2][0], c[2][1], n_c)
-    # aM = np.random.normal(a[0][0], a[0][1], n_a).astype(int)
-    # aa = np.random.normal(a[1][0], a[1][1], n_a)
+parameters = pd.DataFrame(
+    {
+        "Decay":           decay,
+        "Min distance":    min_dist,
+        "Max distance":    max_dist,
+        "Distance curve":  distance_curve,
+        "Low frequency":   min_freq,
+        "High frequency":  max_freq,
+        "Frequency curve": frequency_curve
+    }
+)
 
-    # # Clip gain params to prevent exploding feedback
-    # ca = np.clip(ca, 0, 1)
-    # cd = np.clip(cd, 0, 1)
-    # aa = np.clip(aa, 0, 1)
+# prime number list for delay line
+PRIME_LIST = prime(0, 30000)
 
-    # # Process the audio file with the Freeverb effect
-    # y = freeverb(
-    #     x=x,
-    #     cM=cM,
-    #     ca=ca,
-    #     cd=cd,
-    #     aM=aM,
-    #     aa=aa
-    # )
+for i in range(IMPULSE_NUM):
+    print(parameters.values[i])
+    y = simple_fdn(x,
+                   decay=0,
+                   min_dist=0,
+                   max_dist=0,
+                   distance_curve=distance_curve[i],
+                   min_freq=min_freq[i],
+                   max_freq=max_freq[i],
+                   frequency_curve=frequency_curve[i],
+                   H=H,
+                   prime_list=PRIME_LIST.astype(np.int32),
+                   sr=SAMPLE_RATE,
+                   max_length=MAX_LENGTH)
 
-    # # Truncate to desired length
-    # y = y[:length]
-
-    # Store the params in a .txt file
-    p_filename = os.path.splitext(x_file)[0] + f"_{i}.txt" # add Bell curve Wojack to slides
-    p = np.concatenate([cM, ca, cd, aM, aa], dtype=object)
-    np.savetxt(p_path, p, fmt='%.10f')
-
-    # Save the processed audio to a new audio file
-    y_filename = os.path.splitext(x_file)[0] + f"_{i}.wav"
-    y_path = os.path.join(y_dir, y_filename)
-    write(y_path, y, sr)
-    print(f"Generated: {i+1}/{n_samples}")
-
-    # Generate the spectrogram
-    Sn = np.array(generate_specgram(y, sr))
-    specgram_filename = os.path.splitext(x_file)[0] + f"_{i}.txt" # add Bell curve Wojack to slides
-    specgram_path = os.path.join(spectrograms_dir, specgram_filename)
-    np.savetxt(specgram_path, Sn)
-
-    print(f"{i}/{n_samples}")
+    # Save impulse response audio
+    y_path = y_dir + '/' + "impulse" + f"_{i}.wav"
+    write(y_path, y, SAMPLE_RATE)
+    # Save FDN params
+    p_path = p_dir + '/' + "impulse" + f"_{i}.txt"
+    # print(parameters.values[i])
+    # np.savetxt(p_path, parameters.values[i], fmt='%.10f')
+    np.savetxt(p_path, parameters.values[i])
+    # Generate and save the spectrogram
+    Sn = np.array(generate_specgram(y, SAMPLE_RATE))
+    spect_path = spect_dir + '/' + "impulse" + f"_{i}.txt"
+    np.savetxt(spect_path, Sn)
+    # Optional: Generate and save spectrogram plot
+    if PLOT:
+        plot_specgram(Sn, SAMPLE_RATE, "impulse" + f"_{i}", plot_dir)
+    
+    print(f"{i+1}/{IMPULSE_NUM}")
 
 end_time = time.time()
 runtime = end_time - start_time
-print(f"Runtime: {runtime} seconds")
+print(f"Generated: {IMPULSE_NUM} RIRs in {runtime} seconds")

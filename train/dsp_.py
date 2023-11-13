@@ -210,7 +210,7 @@ def simple_fdn(input,
     # assert np.abs(decay) <= 1.0, f"decay between 0 and 1 expected, got: {decay}"
 
     # scale delay time parameter values if they are within range.
-    min_dist = min_dist * 100. if (min_dist > 0) else 1.
+    min_dist = min_dist * 100. if (min_dist > 0) else 0.1
     max_dist = max_dist * 100. if (max_dist > 0) else 1.
     
     # swap if minimum is larger than maximum
