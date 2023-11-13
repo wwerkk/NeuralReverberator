@@ -1,6 +1,6 @@
 import datetime
 import util
-import model
+import model_
 import os
 ## TODO: add early stopping and checkpoint save(!) callbacks
 ## TODO: retrain for longer
@@ -17,7 +17,7 @@ input_shape = (513, 128, 1)
 rate = 16000
 
 # build the model
-regression_model = model.build_spectral_regression(input_shape=input_shape, 
+regression_model = model_.build_spectral_regression(input_shape=input_shape, 
                                    n_filters=n_filters,
                                    lr=learning_rate)
 
