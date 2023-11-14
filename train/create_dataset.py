@@ -29,8 +29,8 @@ os.makedirs(plot_dir, exist_ok=True)
 # FDN size and samplerate
 FDN_SIZE = 16
 SAMPLE_RATE = 16000
-IMPULSE_NUM = 10
-MAX_LENGTH = 1000
+IMPULSE_NUM = 5000
+MAX_LENGTH = 2000
 PLOT = True
 
 # Set the random seed for reproducibility

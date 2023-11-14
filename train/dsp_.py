@@ -71,7 +71,7 @@ def freeverb(
     return y
 
 @jit("float64[:](float64[:], int32, boolean, float64)", nopython=True, fastmath=False)
-def feedforward_delay(x, loop_time=1, milliseconds=False, sr=44100):
+def feedforward_delay(x, loop_time=1, milliseconds=False, sr=16000):
     
     M = (loop_time / 1000) * sr if milliseconds else loop_time
     M = int(M) if (M > 0) else 1
@@ -92,7 +92,7 @@ def feedforward_delay(x, loop_time=1, milliseconds=False, sr=44100):
     return y
 
 @jit("float64[:](float64[:], float64, float64)", nopython=True, fastmath=False)
-def onepole(input, freq=200, sr=44100):
+def onepole(input, freq=200, sr=16000):
     
     output = np.zeros((input.shape[-1]))
     
@@ -110,7 +110,7 @@ def onepole(input, freq=200, sr=44100):
     return output
 
 @jit("float64[:](float64[:], float64)", nopython=True, fastmath=False)
-def dc_block(input, sr=44100):
+def dc_block(input, sr=16000):
     
     freq = 20
     output = np.zeros((input.shape[-1]))
@@ -142,7 +142,7 @@ def prime(x, y):
     return np.array(prime_list)
 
 @jit("int32[:](int32, float64, float64, float64, int32[:], int32)", nopython=True, fastmath=False)
-def del_list(n=16, min_dist=1., max_dist=100., curve=1.0, prime_list=np.array([0]), sr=44100):
+def del_list(n=16, min_dist=1., max_dist=100., curve=1.0, prime_list=np.array([0]), sr=16000):
     
     """
     create a list of delay times, with a minimum and maximum distance.
@@ -202,7 +202,7 @@ def simple_fdn(input,
                frequency_curve=1.809,
                H=np.array(0),
                prime_list=np.array(0),
-               sr=44100,
+               sr=16000,
                max_length=2000):
 
     # assert all values have been entered.
@@ -262,7 +262,7 @@ def simple_fdn(input,
     feedback = np.zeros(x.shape)
     feedback[:, :] = x[:, :]
     
-    num_iterations = int(np.ceil((44100 / l[0])  * (decay / 1000)))
+    num_iterations = int(np.ceil((sr / l[0])  * (decay / 1000)))
     
     for j in prange(num_iterations):
         for i in prange(N):
